@@ -35,11 +35,13 @@ func main() {
 		line = line[:len(line)-1] // remove trailing newline
 		args := strings.Split(line, " ")
 		cmd := exec.Command(cmdname, args...)
-		out, err := cmd.Output()
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		err = cmd.Run()
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Print(string(out))
 	}
 }

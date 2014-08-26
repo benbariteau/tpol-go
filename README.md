@@ -17,4 +17,4 @@ Example:
 stuff
 ```
 
-This is a very bare-bones command right now. I hope to add stuff like color and readline support in the future.
+This is a rather bare-bones command right now. I hope to add stuff tab-completion and history in the future.
