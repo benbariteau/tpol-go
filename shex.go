@@ -22,7 +22,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("shell for ", cmdpath)
+	fmt.Println("shell for", cmdpath)
 
 	stdin := bufio.NewReader(os.Stdin)
 	for {
@@ -40,6 +40,6 @@ func main() {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Println(string(out))
+		fmt.Print(string(out))
 	}
 }

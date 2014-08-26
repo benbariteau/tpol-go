@@ -1,7 +1,5 @@
-shex
-====
-
 shex - a command-specific shell
+====
 
 shex is a "shell" for one specific command.
 
