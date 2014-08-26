@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func main() {
@@ -21,4 +23,23 @@ func main() {
 	}
 
 	fmt.Println("shell for ", cmdpath)
+
+	stdin := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Printf(">%v ", cmdname)
+		line, err := stdin.ReadString('\n')
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		line = line[:len(line)-1] // remove trailing newline
+		args := strings.Split(line, " ")
+		cmd := exec.Command(cmdname, args...)
+		out, err := cmd.Output()
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		fmt.Println(string(out))
+	}
 }
