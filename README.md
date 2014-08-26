@@ -4,7 +4,7 @@ shex - a command-specific shell
 shex is a "shell" for one specific command.
 
 Use it like this:
-```bash
+```
 $ shex git
 shell for /usr/bin/git
 >git 
