@@ -64,8 +64,20 @@ func main() {
 
 			out := bufio.NewReader(stdout)
 
+			argarr := strings.Fields(args)
+			prefix := strings.Join(argarr[:len(argarr)-1], " ")
+			if prefix != "" {
+				prefix = prefix + " "
+			}
 			for line, err := out.ReadString('\n'); err == nil; line, err = out.ReadString('\n') {
-				completions = append(completions, line)
+				completions = append(
+					completions,
+					fmt.Sprintf(
+						"%v%v",
+						prefix,
+						line[:len(line)-1],
+					),
+				)
 			}
 			return
 		}
