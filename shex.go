@@ -30,21 +30,23 @@ func main() {
 	bashCompletionFunc, ok := funcMap[cmdname]
 	var completionFunc linenoise.CompletionHandler = linenoise.DefaultCompletionHandler
 	if ok {
-		completionFunc = func(args string) []string {
+		completionFunc = func(args string) (completions []string) {
 			tmpfile, err := ioutil.TempFile("", cmdname)
 			if err != nil {
 				fmt.Println("Unable to create temporary file: ", err.Error())
-				return []string{}
+				return
 			}
 			tmpfile.Write([]byte(print_completions_src))
 			line := fmt.Sprintf("%v %v", cmdname, args)
 			completionsCmd := exec.Command(
 				"env",
-				fmt.Sprintf("COMP_WORDS=(%v)", line),
-				"COMP_CWORD=1",
+				fmt.Sprintf("COMP_CWORD=%v", len(strings.Fields(line))-1),
+				fmt.Sprintf("COMP_LINE=%v", line),
+				fmt.Sprintf("COMP_POINT=%v", len(line)+1),
 				"bash", "-c",
 				fmt.Sprint(
 					fmt.Sprintf("source %v;", tmpfile.Name()),
+					fmt.Sprintf("COMP_WORDS=(%v);", line),
 					fmt.Sprintf(
 						"source /usr/local/etc/bash_completion; %v; ",
 						bashCompletionFunc,
@@ -60,10 +62,12 @@ func main() {
 
 			completionsCmd.Start()
 
-			bytes, _ := ioutil.ReadAll(stdout)
+			out := bufio.NewReader(stdout)
 
-			fmt.Println(string(bytes))
-			return []string{}
+			for line, err := out.ReadString('\n'); err == nil; line, err = out.ReadString('\n') {
+				completions = append(completions, line)
+			}
+			return
 		}
 	}
 	linenoise.SetCompletionHandler(completionFunc)
@@ -124,7 +128,7 @@ func bashCompletionFuncs() map[string]string {
 const print_completions_src = `
 __print_completions() {
     for ((i=0;i<${#COMPREPLY[*]};i++))
-        do echo $(COMPREPLY[i]}
+        do echo ${COMPREPLY[i]}
     done
 }
 `
