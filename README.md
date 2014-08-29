@@ -17,4 +17,4 @@ Example:
 stuff
 ```
 
-This is a rather bare-bones command right now. I hope to add stuff tab-completion and history in the future.
+Currently supports history and tab completion using linenoise and some special sauce borrowed from the awesomewm guys.
