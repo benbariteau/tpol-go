@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -48,7 +49,8 @@ func main() {
 					fmt.Sprintf("source %v;", tmpfile.Name()),
 					fmt.Sprintf("COMP_WORDS=(%v);", line),
 					fmt.Sprintf(
-						"source /usr/local/etc/bash_completion; %v; ",
+						"source %v; %v; ",
+						bashCompletionPath(),
 						bashCompletionFunc,
 					),
 					"__print_completions;",
@@ -109,7 +111,7 @@ func main() {
 }
 
 func bashCompletionFuncs() map[string]string {
-	cmd := exec.Command("bash", "-c", "source /usr/local/etc/bash_completion; complete -p")
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source %v; complete -p", bashCompletionPath()))
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -136,6 +138,40 @@ func bashCompletionFuncs() map[string]string {
 	}
 
 	return completionFuncs
+}
+
+const bashCompletionPathUnix = "/etc/bash_completion"
+
+func bashCompletionPath() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return brewPrefix() + bashCompletionPathUnix
+	default:
+		return bashCompletionPathUnix
+	}
+}
+
+func brewPrefix() string {
+	cmd := exec.Command("brew", "--prefix")
+
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	cmd.Start()
+
+	stdout := bufio.NewReader(stdoutPipe)
+	line, err := stdout.ReadString('\n')
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return ""
+	}
+
+	return line[:len(line)-1]
 }
 
 const print_completions_src = `
