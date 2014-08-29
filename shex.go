@@ -92,6 +92,7 @@ func main() {
 			fmt.Println(err.Error())
 			return
 		}
+		linenoise.AddHistory(line)
 
 		args := strings.Fields(line)
 
