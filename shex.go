@@ -53,7 +53,7 @@ func main() {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			ps1 = string(ps1Bytes)
+			ps1 = strings.TrimSpace(string(ps1Bytes))
 
 			if err := cmd.Wait(); err != nil {
 				fmt.Println(err.Error())
