@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/GeertJohan/go.linenoise"
 	"github.com/firba1/complete"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -36,7 +37,29 @@ func main() {
 	fmt.Println("shell for", cmdpath)
 
 	for {
-		line, err := linenoise.Line(fmt.Sprintf(">%v ", cmdname))
+		ps1 := ""
+		if cmdname == "git" {
+			cmd := exec.Command("bash", "-l", "-c", "__git_ps1")
+			gitPs1Stdout, err := cmd.StdoutPipe()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+
+			if err := cmd.Start(); err != nil {
+				fmt.Println(err.Error())
+			}
+
+			ps1Bytes, err := ioutil.ReadAll(gitPs1Stdout)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			ps1 = string(ps1Bytes)
+
+			if err := cmd.Wait(); err != nil {
+				fmt.Println(err.Error())
+			}
+		}
+		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", ps1, cmdname))
 		if err != nil {
 			fmt.Println(err.Error())
 			return
