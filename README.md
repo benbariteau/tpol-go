@@ -18,6 +18,11 @@ stuff
 ```
 
 Features:
-* Subcommand history per session (multi-session history is coming)
+* Subcommand history (per session)
 * Bash completion (using linenoise)
 * Command escape (just type `!command with args`)
+
+Coming:
+* Session-spanning (command specific) history
+* Filename tab completion
+* Readline support
