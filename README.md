@@ -1,4 +1,4 @@
-T'Pol - a command-specific shell
+T'Pol - a shell for subcommands
 ====
 
 T'Pol is a "shell" for one specific command, allowing you to run subcommands or give it arguments without having to type the command first each time.
