@@ -1,11 +1,11 @@
-shex - a command-specific shell
+T'Pol - a command-specific shell
 ====
 
-shex is a "shell" for one specific command.
+T'Pol is a "shell" for one specific command, allowing you to run subcommands or give it arguments without having to type the command first each time.
 
 Use it like this:
 ```
-$ shex git
+$ tpol git
 shell for /usr/bin/git
 >git 
 ```
