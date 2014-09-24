@@ -20,4 +20,4 @@ stuff
 Features:
 * Subcommand history per session (multi-session history is coming)
 * Bash completion (using linenoise)
-* Command escape (just type `!diffcmd with args`)
+* Command escape (just type `!command with args`)
