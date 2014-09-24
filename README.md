@@ -1,4 +1,4 @@
-T'Pol - a command-specific shell
+T'Pol - a shell for subcommands
 ====
 
 T'Pol is a "shell" for one specific command, allowing you to run subcommands or give it arguments without having to type the command first each time.
@@ -17,4 +17,12 @@ Example:
 stuff
 ```
 
-Currently supports history and tab completion using linenoise and some special sauce borrowed from the awesomewm guys.
+Features:
+* Subcommand history (per session)
+* Bash completion (using linenoise)
+* Command escape (just type `!command with args`)
+
+Coming:
+* Session-spanning (command specific) history
+* Filename tab completion
+* Readline support

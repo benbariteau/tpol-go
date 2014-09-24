@@ -12,7 +12,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Printf("usage:\t%v COMMAND", os.Args[0])
+		fmt.Printf("usage:\t%v COMMAND\n", os.Args[0])
 		return
 	}
 
