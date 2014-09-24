@@ -18,3 +18,8 @@ stuff
 ```
 
 Currently supports history and tab completion using linenoise and some special sauce borrowed from the awesomewm guys.
+
+Features:
+* Subcommand history per session (multi-session history is coming)
+* Bash completion (using linenoise)
+* Command escape (just type `!diffcmd with args`)
