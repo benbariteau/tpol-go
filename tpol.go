@@ -66,6 +66,20 @@ func main() {
 		}
 		linenoise.AddHistory(line)
 
+		// escape to shell
+		if len(line) >= 1 && line[0] == '!' {
+			cmdFields := strings.Fields(line[1:])
+			cmd := exec.Command(cmdFields[0], cmdFields[1:]...)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Stdin = os.Stdin
+			err = cmd.Run()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			continue
+		}
+
 		args := strings.Fields(line)
 
 		cmd := exec.Command(cmdname, args...)
