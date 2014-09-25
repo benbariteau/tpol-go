@@ -60,6 +60,8 @@ func main() {
 				fmt.Println(err.Error())
 			}
 			continue
+		} else if strings.TrimSpace(line) == "exit" {
+			return
 		}
 
 		args := strings.Fields(line)
