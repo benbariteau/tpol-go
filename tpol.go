@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 )
 
@@ -36,6 +37,8 @@ func main() {
 
 	fmt.Println("shell for", cmdpath)
 
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
 	for {
 		promptStr := ps1(cmdname)
 		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
@@ -61,11 +64,21 @@ func main() {
 
 		args := strings.Fields(line)
 
+		cancel := make(chan int)
 		cmd := exec.Command(cmdname, args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
+		go func() {
+			select {
+			case <-cancel:
+				return
+			case <-sigint:
+				cmd.Process.Signal(os.Interrupt)
+			}
+		}()
 		err = cmd.Run()
+		close(cancel)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
