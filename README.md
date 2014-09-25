@@ -21,6 +21,7 @@ Features:
 * Subcommand history (per session)
 * Bash completion (using linenoise)
 * Command escape (just type `!command with args`)
+* Ctrl+C to cancel current subcommand
 
 Coming:
 * Session-spanning (command specific) history
