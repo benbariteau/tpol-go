@@ -37,29 +37,8 @@ func main() {
 	fmt.Println("shell for", cmdpath)
 
 	for {
-		ps1 := ""
-		if cmdname == "git" {
-			cmd := exec.Command("bash", "-l", "-c", "__git_ps1")
-			gitPs1Stdout, err := cmd.StdoutPipe()
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-
-			if err := cmd.Start(); err != nil {
-				fmt.Println(err.Error())
-			}
-
-			ps1Bytes, err := ioutil.ReadAll(gitPs1Stdout)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			ps1 = strings.TrimSpace(string(ps1Bytes))
-
-			if err := cmd.Wait(); err != nil {
-				fmt.Println(err.Error())
-			}
-		}
-		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", ps1, cmdname))
+		promptStr := ps1(cmdname)
+		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -92,4 +71,29 @@ func main() {
 			continue
 		}
 	}
+}
+
+func ps1(cmdname string) (promptStr string) {
+	if cmdname == "git" {
+		cmd := exec.Command("bash", "-l", "-c", "__git_ps1")
+		gitPs1Stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		if err := cmd.Start(); err != nil {
+			fmt.Println(err.Error())
+		}
+
+		ps1Bytes, err := ioutil.ReadAll(gitPs1Stdout)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		promptStr = strings.TrimSpace(string(ps1Bytes))
+
+		if err := cmd.Wait(); err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	return
 }
