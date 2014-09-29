@@ -34,10 +34,12 @@ func main() {
 		},
 	)
 
+	ps := NewPromptStringer(PromptStringMapping{"git", "__git_ps1"})
+
 	fmt.Println("shell for", cmdpath)
 
 	for {
-		promptStr := ps1(cmdname)
+		promptStr := ps.PromptString(cmdname)
 		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
 		if err != nil {
 			fmt.Println(err.Error())
