@@ -37,35 +37,35 @@ func main() {
 
 	fmt.Println("shell for", cmdpath)
 
-	sigint := make(chan os.Signal, 1)
-	signal.Notify(sigint, os.Interrupt)
 	for {
 		promptStr := ps1(cmdname)
 		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
 		if err != nil {
 			fmt.Println(err.Error())
-			return
+			break
 		}
-		linenoise.AddHistory(line)
+		linenoise.AddHistory(line) // add history
 
 		var cmd *exec.Cmd
-		// escape to shell
-		if len(line) >= 1 && line[0] == '!' {
+		if len(line) >= 1 && line[0] == '!' { // escape to shell
 			cmdFields := strings.Fields(line[1:])
 			cmd = exec.Command(cmdFields[0], cmdFields[1:]...)
-		} else if strings.TrimSpace(line) == "exit" {
-			return
-		} else {
+		} else if strings.TrimSpace(line) == "exit" { // exit
+			break
+		} else { // regular subcommand
 			args := strings.Fields(line)
 			cmd = exec.Command(cmdname, args...)
 		}
 
+		// hook up expecting tty stuff
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
 
+		// handle interrupts
 		cancel := make(chan int)
-		go sigintCatcher(sigint, cancel, cmd)
+		go sigintCatcher(cmd, cancel)
+
 		err = cmd.Run()
 		close(cancel)
 
@@ -76,7 +76,9 @@ func main() {
 	}
 }
 
-func sigintCatcher(sigint chan os.Signal, cancel chan int, cmd *exec.Cmd) {
+func sigintCatcher(cmd *exec.Cmd, cancel chan int) {
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
 	select {
 	case <-cancel:
 		return
