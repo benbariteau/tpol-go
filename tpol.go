@@ -63,8 +63,7 @@ func main() {
 		cmd.Stdin = os.Stdin
 
 		// handle interrupts
-		cancel := make(chan int)
-		go sigintCatcher(cmd, cancel)
+		cancel := catchAndPassSignal(cmd, os.Interrupt)
 
 		err = cmd.Run()
 		close(cancel)
@@ -76,15 +75,26 @@ func main() {
 	}
 }
 
-func sigintCatcher(cmd *exec.Cmd, cancel chan int) {
+/*
+catchAndPassSignal catches the given signals and passes them to the process of the given command
+
+catchAndPassSignal can be canceled by closing the cancel channel that it returns
+*/
+func catchAndPassSignal(cmd *exec.Cmd, signals ...os.Signal) (cancel chan int) {
 	sigint := make(chan os.Signal, 1)
-	signal.Notify(sigint, os.Interrupt)
-	select {
-	case <-cancel:
-		return
-	case <-sigint:
-		cmd.Process.Signal(os.Interrupt)
-	}
+	signal.Notify(sigint, signals...)
+
+	cancel = make(chan int)
+
+	go func() {
+		select {
+		case <-cancel:
+			return
+		case sig := <-sigint:
+			cmd.Process.Signal(sig)
+		}
+	}()
+	return
 }
 
 func ps1(cmdname string) (promptStr string) {
