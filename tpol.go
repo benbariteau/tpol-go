@@ -48,43 +48,40 @@ func main() {
 		}
 		linenoise.AddHistory(line)
 
+		var cmd *exec.Cmd
 		// escape to shell
 		if len(line) >= 1 && line[0] == '!' {
 			cmdFields := strings.Fields(line[1:])
-			cmd := exec.Command(cmdFields[0], cmdFields[1:]...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			cmd.Stdin = os.Stdin
-			err = cmd.Run()
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			continue
+			cmd = exec.Command(cmdFields[0], cmdFields[1:]...)
 		} else if strings.TrimSpace(line) == "exit" {
 			return
+		} else {
+			args := strings.Fields(line)
+			cmd = exec.Command(cmdname, args...)
 		}
 
-		args := strings.Fields(line)
-
-		cancel := make(chan int)
-		cmd := exec.Command(cmdname, args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
-		go func() {
-			select {
-			case <-cancel:
-				return
-			case <-sigint:
-				cmd.Process.Signal(os.Interrupt)
-			}
-		}()
+
+		cancel := make(chan int)
+		go sigintCatcher(sigint, cancel, cmd)
 		err = cmd.Run()
 		close(cancel)
+
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
+	}
+}
+
+func sigintCatcher(sigint chan os.Signal, cancel chan int, cmd *exec.Cmd) {
+	select {
+	case <-cancel:
+		return
+	case <-sigint:
+		cmd.Process.Signal(os.Interrupt)
 	}
 }
 
