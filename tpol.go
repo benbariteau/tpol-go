@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/GeertJohan/go.linenoise"
 	"github.com/firba1/complete"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -94,30 +93,5 @@ func catchAndPassSignal(cmd *exec.Cmd, signals ...os.Signal) (cancel chan int) {
 			cmd.Process.Signal(sig)
 		}
 	}()
-	return
-}
-
-func ps1(cmdname string) (promptStr string) {
-	if cmdname == "git" {
-		cmd := exec.Command("bash", "-l", "-c", "__git_ps1")
-		gitPs1Stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		if err := cmd.Start(); err != nil {
-			fmt.Println(err.Error())
-		}
-
-		ps1Bytes, err := ioutil.ReadAll(gitPs1Stdout)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		promptStr = strings.TrimSpace(string(ps1Bytes))
-
-		if err := cmd.Wait(); err != nil {
-			fmt.Println(err.Error())
-		}
-	}
 	return
 }
