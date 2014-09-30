@@ -28,13 +28,13 @@ func main() {
 		func(args string) (completions []string) {
 			if len(args) > 1 && args[0] == '!' {
 				cmd := args[1:]
-				completions = complete.Path(cmd)
+				completions = complete.Complete(cmd)
 				for i, v := range completions {
 					completions[i] = "!" + v
 				}
 				return completions
 			}
-			completions = complete.Bash(cmdname + " " + args)
+			completions = complete.Complete(cmdname + " " + args)
 			for i, v := range completions {
 				completions[i] = v[len(cmdname)+1:]
 			}
