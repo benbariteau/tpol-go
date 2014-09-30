@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const escapeCharacter = '!'
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Printf("usage:\t%v COMMAND\n", os.Args[0])
@@ -25,20 +27,29 @@ func main() {
 	}
 
 	linenoise.SetCompletionHandler(
-		func(args string) (completions []string) {
-			if len(args) > 1 && args[0] == '!' {
-				cmd := args[1:]
-				completions = complete.Complete(cmd)
-				for i, v := range completions {
-					completions[i] = "!" + v
+		func(args string) []string {
+			cmdFilter := CommandFilter{}
+			if len(args) > 1 && args[0] == byte(escapeCharacter) {
+				cmdFilter = CommandFilter{
+					func(s string) string {
+						return s[1:]
+					},
+					func(s string) string {
+						return string(escapeCharacter) + s
+					},
 				}
-				return completions
+			} else {
+				prefix := cmdname + " "
+				cmdFilter = CommandFilter{
+					func(s string) string {
+						return prefix + s
+					},
+					func(s string) string {
+						return s[len(prefix):]
+					},
+				}
 			}
-			completions = complete.Complete(cmdname + " " + args)
-			for i, v := range completions {
-				completions[i] = v[len(cmdname)+1:]
-			}
-			return
+			return completions(args, cmdFilter)
 		},
 	)
 
@@ -104,4 +115,18 @@ func catchAndPassSignal(cmd *exec.Cmd, signals ...os.Signal) (cancel chan int) {
 		}
 	}()
 	return
+}
+
+type CommandFilter struct {
+	Filter   func(string) string
+	Unfilter func(string) string
+}
+
+func completions(line string, filter CommandFilter) []string {
+	completionList := complete.Complete(filter.Filter(line))
+
+	for i, v := range completionList {
+		completionList[i] = filter.Unfilter(v)
+	}
+	return completionList
 }
