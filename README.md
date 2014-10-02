@@ -18,13 +18,12 @@ stuff
 ```
 
 Features:
-* Subcommand history (per session)
+* Subcommand history (per command)
 * Bash completion (using linenoise)
 * Prompt string support (just git for now)
 * Command escape (just type `!command with args`)
 * Ctrl+C to cancel current subcommand
 
 Coming:
-* Session-spanning (command specific) history
 * Filename tab completion
 * Readline support
