@@ -100,7 +100,7 @@ func main() {
 		} else if strings.TrimSpace(line) == "exit" { // exit
 			break
 		} else { // regular subcommand
-			linenoise.AddHistory(line) // add history
+			linenoise.AddHistory(line) // add history iff non-metacommand
 			args := strings.Fields(line)
 			cmd = exec.Command(cmdname, args...)
 		}
