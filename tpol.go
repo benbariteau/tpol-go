@@ -7,10 +7,22 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"os/user"
 	"strings"
 )
 
 const escapeCharacter = '!'
+const configDirName = ".tpol"
+const historyDirName = "history"
+
+func getHistoryDir() (string, error) {
+	dirList := []string{configDirName, historyDirName}
+	usr, err := user.Current()
+	if err == nil {
+		dirList = append([]string{usr.HomeDir}, dirList...)
+	}
+	return strings.Join(dirList, "/"), err
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -57,6 +69,22 @@ func main() {
 
 	fmt.Println("shell for", cmdpath)
 
+	historyDir, err := getHistoryDir()
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = os.MkdirAll(historyDir, os.ModeDir|0744)
+	if err != nil {
+		fmt.Println(err)
+	}
+	historyPath := strings.Join([]string{historyDir, cmdname}, "/")
+	err = linenoise.LoadHistory(historyPath)
+	if err != nil {
+		fmt.Println("No history file found: new histoy file created at " + historyPath)
+	} else {
+		fmt.Println("Using history file at: " + historyPath)
+	}
+
 	for {
 		promptStr := ps.PromptString(cmdname)
 		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
@@ -64,7 +92,6 @@ func main() {
 			fmt.Println(err.Error())
 			break
 		}
-		linenoise.AddHistory(line) // add history
 
 		var cmd *exec.Cmd
 		if len(line) >= 1 && line[0] == '!' { // escape to shell
@@ -73,6 +100,7 @@ func main() {
 		} else if strings.TrimSpace(line) == "exit" { // exit
 			break
 		} else { // regular subcommand
+			linenoise.AddHistory(line) // add history
 			args := strings.Fields(line)
 			cmd = exec.Command(cmdname, args...)
 		}
@@ -92,6 +120,10 @@ func main() {
 			fmt.Println(err.Error())
 			continue
 		}
+	}
+	err = linenoise.SaveHistory(historyPath)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
