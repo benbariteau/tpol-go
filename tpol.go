@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/GeertJohan/go.linenoise"
-	"github.com/firba1/complete"
 	"os"
 	"os/exec"
 	"os/signal"
 	"os/user"
 	"strings"
+
+	"github.com/GeertJohan/go.linenoise"
+
+	"github.com/firba1/complete"
 )
 
 const escapeCharacter = '!'
