@@ -44,7 +44,6 @@ func (ps PromptStringer) PromptString(cmdname string) (promptStr string) {
 		promptStr = strings.TrimSpace(string(ps1Bytes))
 
 		if err := cmd.Wait(); err != nil {
-			fmt.Println(err.Error())
 			return
 		}
 	}
