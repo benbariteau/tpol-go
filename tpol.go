@@ -139,9 +139,13 @@ func main() {
 		} else if strings.TrimSpace(line) == "exit" { // exit
 			break
 		} else { // regular subcommand
-			linenoise.AddHistory(line) // add history iff non-metacommand
 			args := strings.Fields(line)
+			if len(args) > 0 && args[0] == cmdname {
+				// if the user types the command again (common mistake I make), ignore it
+				args = args[1:]
+			}
 			cmd = exec.Command(cmdname, args...)
+			linenoise.AddHistory(line) // add history iff non-metacommand
 		}
 
 		// hook up expecting tty stuff
