@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"os/user"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/GeertJohan/go.linenoise"
 
@@ -15,6 +19,7 @@ import (
 
 const escapeCharacter = '!'
 const configDirName = ".tpol"
+const logsDirName = "logs"
 const historyDirName = "history"
 
 func getHistoryDir() (string, error) {
@@ -24,6 +29,35 @@ func getHistoryDir() (string, error) {
 		dirList = append([]string{usr.HomeDir}, dirList...)
 	}
 	return strings.Join(dirList, "/"), err
+}
+
+func getLogsDir() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, configDirName, logsDirName), nil
+}
+
+func getLogger(cmdname string) *log.Logger {
+	logsDir, err := getLogsDir()
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = os.MkdirAll(logsDir, os.ModeDir|0744)
+	if err != nil {
+		fmt.Println(err)
+	}
+	logpath := filepath.Join(logsDir, fmt.Sprintf("%v-%v.log", cmdname, time.Now().Format(time.RFC3339)))
+	var logwriter io.Writer
+	logfile, err := os.Create(logpath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Unable to create log file: ", err)
+		logwriter = os.Stderr
+	} else {
+		logwriter = logfile
+	}
+	return log.New(logwriter, "", log.Ldate|log.Ltime)
 }
 
 func main() {
@@ -79,6 +113,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	historyPath := strings.Join([]string{historyDir, cmdname}, "/")
 	err = linenoise.LoadHistory(historyPath)
 	if err != nil {
@@ -87,11 +122,13 @@ func main() {
 		fmt.Println("Using history file at: " + historyPath)
 	}
 
+	logger := getLogger(cmdname)
+
 	for {
 		promptStr := ps.PromptString(cmdname)
 		line, err := linenoise.Line(fmt.Sprintf("%v>%v ", promptStr, cmdname))
 		if err != nil {
-			fmt.Println(err.Error())
+			logger.Println(err.Error(), line)
 			break
 		}
 
@@ -119,7 +156,7 @@ func main() {
 		close(cancel)
 
 		if err != nil {
-			fmt.Println(err.Error())
+			logger.Println(err.Error(), cmd)
 			continue
 		}
 	}
