@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/GeertJohan/go.linenoise"
-
 	"github.com/firba1/complete"
 )
 
@@ -138,6 +137,8 @@ func main() {
 			cmd = exec.Command(cmdFields[0], cmdFields[1:]...)
 		} else if strings.TrimSpace(line) == "exit" { // exit
 			break
+		} else if strings.TrimSpace(line) == "" { // don't run anything
+			continue
 		} else { // regular subcommand
 			args := strings.Fields(line)
 			if len(args) > 0 && args[0] == cmdname {
