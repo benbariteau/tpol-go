@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -20,6 +21,43 @@ const escapeCharacter = '!'
 const configDirName = ".tpol"
 const logsDirName = "logs"
 const historyDirName = "history"
+const promptStringConfigFilename = "prompts.json"
+
+func getPromptStringConfigPath() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(
+		usr.HomeDir,
+		configDirName,
+		promptStringConfigFilename,
+	), nil
+}
+
+func getPromptStringConfig() (mappings map[string]string, err error) {
+	mappings = make(map[string]string)
+
+	promptStringConfigPath, err := getPromptStringConfigPath()
+	if err != nil {
+		return
+	}
+
+	fd, err := os.Open(promptStringConfigPath)
+	if err != nil {
+		return
+	}
+	defer fd.Close()
+
+	err = json.NewDecoder(fd).Decode(&mappings)
+	if err != nil {
+		mappings = make(map[string]string)
+		return
+	}
+
+	return
+}
 
 func getHistoryDir() (string, error) {
 	dirList := []string{configDirName, historyDirName}
@@ -100,7 +138,22 @@ func main() {
 		},
 	)
 
-	ps := NewPromptStringer(PromptStringMapping{"git", "__git_ps1"})
+	promptStringConfig, _ := getPromptStringConfig()
+	if _, ok := promptStringConfig["git"]; !ok {
+		// set default for git
+		promptStringConfig["git"] = "__git_ps1"
+	}
+	promptStringMappings := make([]PromptStringMapping, 0, len(promptStringConfig))
+	for command, promptFunc := range promptStringConfig {
+		promptStringMappings = append(
+			promptStringMappings,
+			PromptStringMapping{
+				Command: command,
+				Func:    promptFunc,
+			},
+		)
+	}
+	ps := NewPromptStringer(promptStringMappings...)
 
 	fmt.Println("shell for", cmdpath)
 
